@@ -7,6 +7,8 @@ self.onmessage = function(e) {
 	let width = e.data.payload.width;
 	// let height = e.data.payload.height;
 
+	postMessage({action: 'loading'});
+
 	let seamcarver = new SeamCarver(image);
 	let result = seamcarver.resize(width);
 
@@ -49,7 +51,7 @@ class SeamCarver {
 		a = this.getPixelBrightness(x - 1, y - 1);
 		b = this.getPixelBrightness(x, y - 1);
 		c = this.getPixelBrightness(x + 1, y - 1);
-		d = this.getPixelBrightness(x - y, y);
+		d = this.getPixelBrightness(x - 1, y);
 		f = this.getPixelBrightness(x + 1, y);
 		g = this.getPixelBrightness(x - 1, y + 1); 
 		h = this.getPixelBrightness(x, y + 1);
@@ -87,7 +89,7 @@ class SeamCarver {
 			costs[row] = new Array(this.width);
 			dirs[row] = new Array(this.width);
 			for (let col = 0; col <= this.width - 1; col++) {
-				let min = argmin([costs[row + 1][col - 1] || Infinity, costs[row + 1][col] || Infinity, costs[row + 1][col + 1]] || Infinity);
+				let min = argmin([costs[row + 1][col - 1] || Infinity, costs[row + 1][col] || Infinity, costs[row + 1][col + 1] || Infinity]);
 				costs[row][col] = vals[row][col] + min.value;
 				dirs[row][col] = min.index - 1;
 			}
@@ -106,11 +108,38 @@ class SeamCarver {
 		return seam;
 	}
 
+	markSeam() {
+		let seam = this.findLowestCostSeam(), 
+			offset = 0;
+
+		let newImage = new Uint8ClampedArray(this.width * this.height * 4);
+
+		for (let row = 0; row < this.height; row++) {
+			for (let col = 0; col < this.width; col++) {
+				if (col === seam[row]) {
+					offset = offset + 4;
+				}
+				else {
+					let pixel = this.getPixelColor(col, row);
+
+					newImage[offset + 0] = pixel.red;
+					newImage[offset + 1] = pixel.green;
+					newImage[offset + 2] = pixel.blue;
+					newImage[offset + 3] = pixel.alpha;
+
+					offset = offset + 4;
+				}
+			}
+		}
+		return newImage; 
+	}
+
 	resize(newWidth) {
 		let newImage, deltaWidth = this.width - newWidth;
 		
 		for (let i = 0; i < deltaWidth; i++) {
-			let seam = this.findLowestCostSeam(), offset = 0;
+			let seam = this.findLowestCostSeam(), 
+				offset = 0;
 
 			newImage = new Uint8ClampedArray((this.width - 1) * this.height * 4);
 
@@ -139,14 +168,16 @@ class SeamCarver {
 }
 
 function argmin(array) {
-	let index = 0, min = Infinity;
+	let len = array.length,
+		index = 0, 
+		min = array[0];
 
-	array.forEach(function(elem, idx) {
-		if (elem < min) {
-			min = elem;
-			index = idx;
+	for (let i = 1; i < len; i++) {
+		if (array[i] < min) {
+			min = array[i];
+			index = i;
 		}
-	});
+	}
 	return {value: min, index: index};
 }
 

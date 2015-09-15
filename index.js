@@ -5,57 +5,38 @@ if (!window.Worker) {
 	throw new Error('unsupported browser');
 }
 
-init();
-
 function init() {
-
-	let canvas = document.getElementById('canvas'),
-		ctx = canvas.getContext('2d'),
+	let ctx = document.getElementById('canvas').getContext('2d'),
+		input = document.getElementById('width'),
 		img = new Image(),
-		widthInput = document.getElementById('width'),
-		seamcarver = new Worker('SeamCarve.js');
+		seamcarver = new SeamCarveWorker(),
+		imageData = null;
 
 	img.src = document.getElementById('source').src;
+	
 	img.onload = function() {
-		window.console.log('image loaded!');
+		// copy the image to the canvas
+		ctx.canvas.height = img.height;
+		ctx.canvas.width = img.width;
+		ctx.drawImage(img, 0, 0);
+
+		// set the value of the resizer to the current image width
+		document.getElementById('width').value = img.width;	
+
+		// get the imagedata from the canvas
+		imageData = ctx.getImageData(0, 0, img.width, img.height);
 	};
 
-	canvas.height = img.height;
-	canvas.width = img.width;
-	widthInput.value = img.width;
+	input.onchange = function(e){
+		if (e.target.value > img.width) { alert('invalid width'); throw new Error('invalid width'); }
 
-	ctx.drawImage(img, 0, 0);
+		seamcarver.adjust(imageData, e.target.value, function(payload){	
+			imageData = new ImageData(payload.image, payload.width, payload.height);
 
-	let imageData = ctx.getImageData(0, 0, img.width, img.height);
-
-	widthInput.onchange = function(e){
-		seamcarver.postMessage({
-			action: 'adjust',
-			payload: {
-				image: imageData,
-				width: e.target.value
-			}
+			ctx.canvas.width = payload.width;
+			ctx.putImageData(imageData, 0, 0);
 		});
 	};
-
-	seamcarver.onmessage = function(e) {
-		switch (e.data.action) {
-
-		case 'update':
-			window.console.log('new image:', e.data); 
-
-			canvas.width = e.data.payload.width;
-			imageData = new ImageData(e.data.payload.image, e.data.payload.width, e.data.payload.height);
-			ctx.putImageData(imageData, 0, 0);
-			break;
-
-		case 'alert':
-			window.console.log('alert:', e.data); 
-			break;
-
-		default:
-			window.console.log('default:', e.data); 
-			break;
-		}
-	};
 }
+
+init();
