@@ -7,9 +7,10 @@ if (!window.Worker) {
 
 function init() {
 	let ctx = document.getElementById('canvas').getContext('2d'),
-		input = document.getElementById('width'),
+		inputwrkr = document.getElementById('worker'),
+		inputnon = document.getElementById('nonwrkr'),
 		img = new Image(),
-		seamcarver = new SeamCarveWorker(),
+		worker = new SeamCarveWorker(),
 		imageData = null;
 
 	img.src = document.getElementById('source').src;
@@ -20,23 +21,66 @@ function init() {
 		ctx.canvas.width = img.width;
 		ctx.drawImage(img, 0, 0);
 
-		// set the value of the resizer to the current image width
-		document.getElementById('width').value = img.width;	
+		// set the value of the resizers to the current image width
+		document.getElementById('worker').value = img.width;	
+		document.getElementById('nonwrkr').value = img.width;	
 
 		// get the imagedata from the canvas
 		imageData = ctx.getImageData(0, 0, img.width, img.height);
 	};
 
-	input.onchange = function(e){
-		if (e.target.value > img.width) { alert('invalid width'); throw new Error('invalid width'); }
+	inputwrkr.onchange = function(e){
+		let newWidth = Number(e.target.value);
 
-		seamcarver.adjust(imageData, e.target.value, function(payload){	
-			imageData = new ImageData(payload.image, payload.width, payload.height);
+		if (newWidth > img.width || isNaN(newWidth)) { 
+			alert('invalid width'); 
+			throw new Error('invalid width'); 
+		}
+
+		// reset to original image if value has been reset
+		if (newWidth === img.width) {
+			ctx.canvas.width = img.width;
+			ctx.putImageData(imageData, 0, 0); 
+			return; 
+		}
+
+		worker.adjust(imageData, newWidth, function(payload){
+			window.console.log(payload);
+
+			let newImageData = new ImageData(payload.image, payload.width, payload.height);
 
 			ctx.canvas.width = payload.width;
-			ctx.putImageData(imageData, 0, 0);
+			ctx.putImageData(newImageData, 0, 0);
 		});
 	};
+
+	inputnon.onchange = function(e){
+		let newWidth = Number(e.target.value);
+		let seamcarver = new SeamCarver(imageData);
+
+		if (newWidth > img.width || isNaN(newWidth)) { 
+			alert('invalid width'); 
+			throw new Error('invalid width'); 
+		}
+
+		// reset to original image if value has been reset
+		if (newWidth === img.width) {
+			ctx.canvas.width = img.width;
+			ctx.putImageData(imageData, 0, 0); 
+			return; 
+		}
+
+		let data = seamcarver.resize(e.target.value);
+		let newImageData = new ImageData(data, e.target.value, img.height);
+
+		ctx.canvas.width = e.target.value;
+		ctx.putImageData(newImageData, 0, 0);
+	};
+}
+
+function changeSrc(e) {
+	document.getElementById('source').src = e.src;
+	init();
 }
 
 init();
