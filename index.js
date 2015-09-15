@@ -9,6 +9,7 @@ function init() {
 	let ctx = document.getElementById('canvas').getContext('2d'),
 		inputwrkr = document.getElementById('worker'),
 		inputnon = document.getElementById('nonwrkr'),
+		widthlabel = document.getElementById('width'),
 		img = new Image(),
 		worker = new SeamCarveWorker(),
 		imageData = null;
@@ -22,8 +23,15 @@ function init() {
 		ctx.drawImage(img, 0, 0);
 
 		// set the value of the resizers to the current image width
-		document.getElementById('worker').value = img.width;	
-		document.getElementById('nonwrkr').value = img.width;	
+		inputwrkr.max = img.width;
+		inputwrkr.min = 1;
+		inputwrkr.value = img.width;	
+
+		inputnon.max = img.width;	
+		inputnon.min = 1;
+		inputnon.value = img.width;
+
+		widthlabel.textContent = 'Width: ' + img.width;
 
 		// get the imagedata from the canvas
 		imageData = ctx.getImageData(0, 0, img.width, img.height);
@@ -31,6 +39,8 @@ function init() {
 
 	inputwrkr.onchange = function(e){
 		let newWidth = Number(e.target.value);
+
+		widthlabel.textContent = 'Width: ' + newWidth;
 
 		if (newWidth > img.width || isNaN(newWidth)) { 
 			alert('invalid width'); 
@@ -56,6 +66,8 @@ function init() {
 
 	inputnon.onchange = function(e){
 		let newWidth = Number(e.target.value);
+		widthlabel.textContent = 'Width: ' + newWidth;
+
 		let seamcarver = new SeamCarver(imageData);
 
 		if (newWidth > img.width || isNaN(newWidth)) { 
