@@ -11,7 +11,6 @@
 			spacing = 5,
 			xSpacing = 0,
 			n = innerWidth / spacing,
-			colors = ["#3B8686", "#79BD9A", "#A8DBA8", "#0B486B"],
 			i;
 	
 	for (i = 0; i < n; i++){

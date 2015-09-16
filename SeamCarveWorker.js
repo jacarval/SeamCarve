@@ -5,7 +5,7 @@ class SeamCarveWorker {
 		this.worker = new Worker('SeamCarve.js');
 	}
 
-	adjust(image, newWidth, callback) {
+	adjust(image, newWidth, updateCb, edgeCb, seamCb) {
 		this.worker.postMessage({
 			action: 'adjust',
 			payload: {
@@ -15,12 +15,22 @@ class SeamCarveWorker {
 		});
 
 		this.worker.onmessage = function(e) {
-			if (e.data.action === 'update') {
-				callback(e.data);
-			}
+			switch (e.data.action){
+			
+			case 'update':
+				updateCb(e.data);
+				break;
 
-			if (e.data.action === 'error') {
-				window.console.log('error');
+			case 'pixelImportance':
+				edgeCb(e.data);
+				break;
+
+			case 'seam':
+				seamCb(e.data);
+				break;
+
+			default:
+				window.console.log(e.data);
 			}
 		};
 	}

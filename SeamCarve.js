@@ -7,19 +7,20 @@ self.onmessage = function(e) {
 	let width = e.data.payload.width;
 	// let height = e.data.payload.height;
 
-	postMessage({action: 'loading'});
+	postMessage({action: 'alert', message: 'resizing'});
 
-	let seamcarver = new SeamCarver(image);
+	let seamcarver = new SeamCarver(image, true);
 	let result = seamcarver.resize(width);
 
 	postMessage({action: 'update', payload: {image: result, width: width, height: image.height}});
 };
 
 class SeamCarver {
-	constructor(imageData) {
+	constructor(imageData, isWorker) {
 		this.data = imageData.data;
 		this.width = imageData.width;
 		this.height = imageData.height;
+		this.isWorker = isWorker;
 	}
 
 	getPixelColor(x, y) {
@@ -75,6 +76,7 @@ class SeamCarver {
 				result[row][col] = (this.getPixelEnergy(col, row));
 			}
 		}
+		if (this.isWorker) postMessage({action: 'pixelImportance', payload: {array: result}});
 		return result;
 	}
 
@@ -105,34 +107,35 @@ class SeamCarver {
 			seam[row + 1] = seam[row] + dirs[row][prev];
 		}
 
+		if (this.isWorker) postMessage({action: 'seam', payload: {seam: seam}});
 		return seam;
 	}
 
-	markSeam() {
-		let seam = this.findLowestCostSeam(), 
-			offset = 0;
+	// markSeam() {
+	// 	let seam = this.findLowestCostSeam(), 
+	// 		offset = 0;
 
-		let newImage = new Uint8ClampedArray(this.width * this.height * 4);
+	// 	let newImage = new Uint8ClampedArray(this.width * this.height * 4);
 
-		for (let row = 0; row < this.height; row++) {
-			for (let col = 0; col < this.width; col++) {
-				if (col === seam[row]) {
-					offset = offset + 4;
-				}
-				else {
-					let pixel = this.getPixelColor(col, row);
+	// 	for (let row = 0; row < this.height; row++) {
+	// 		for (let col = 0; col < this.width; col++) {
+	// 			if (col === seam[row]) {
+	// 				offset = offset + 4;
+	// 			}
+	// 			else {
+	// 				let pixel = this.getPixelColor(col, row);
 
-					newImage[offset + 0] = pixel.red;
-					newImage[offset + 1] = pixel.green;
-					newImage[offset + 2] = pixel.blue;
-					newImage[offset + 3] = pixel.alpha;
+	// 				newImage[offset + 0] = pixel.red;
+	// 				newImage[offset + 1] = pixel.green;
+	// 				newImage[offset + 2] = pixel.blue;
+	// 				newImage[offset + 3] = pixel.alpha;
 
-					offset = offset + 4;
-				}
-			}
-		}
-		return newImage; 
-	}
+	// 				offset = offset + 4;
+	// 			}
+	// 		}
+	// 	}
+	// 	return newImage; 
+	// }
 
 	resize(newWidth) {
 		let newImage, deltaWidth = this.width - newWidth;

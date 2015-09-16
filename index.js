@@ -11,8 +11,9 @@ function init() {
 		checkbox = document.getElementById('checkbox'),
 		widthlabel = document.getElementById('width'),
 		img = new Image(),
-		worker = new SeamCarveWorker(),
 		imageData = null;
+
+	window.worker = new SeamCarveWorker();
 
 	img.src = document.getElementById('source').src;
 	
@@ -41,13 +42,10 @@ function init() {
 		}
 
 		// reset to original image if value has been reset
-		if (newWidth === img.width) {
-			ctx.canvas.width = img.width;
-			ctx.putImageData(imageData, 0, 0); 
-			return; 
-		}
+		ctx.canvas.width = img.width;
+		ctx.putImageData(imageData, 0, 0); 
 
-		if (checkbox.checked) {
+		if (checkbox.checked) {       
 			worker.adjust(imageData, newWidth, function(data){
 				window.console.log(data);
 
@@ -55,6 +53,20 @@ function init() {
 
 				ctx.canvas.width = data.payload.width;
 				ctx.putImageData(newImageData, 0, 0);
+			},
+			function(data){
+				// window.console.log(data.payload);
+			},
+			function(data){
+				let id = ctx.createImageData(1,1);
+				let d  = id.data;
+				d[0] = 255;
+				d[1] = 0;
+				d[2] = 0;
+				d[3] = 255;
+				data.payload.seam.forEach(function(col, row) {
+					ctx.putImageData(id, col, row);
+				});
 			});
 		}
 		else {
