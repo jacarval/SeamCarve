@@ -1,6 +1,13 @@
 body {
   background: #eaecfa;
   font-family: helvetica, arial, sans-serif;
+  margin: 0;
+}
+
+#c {
+  position:absolute;
+  height: 1400px;
+  width: 100%;
 }
 
 .flex-container {
@@ -28,6 +35,8 @@ body {
   display: flex;
   justify-content: space-around;
   align-items:center;
+/*  background: #ce4233;*/
+  padding: 5px;
 }
 
 input {
@@ -162,3 +171,4 @@ input[type=range]::-moz-range-thumb {
   background: #ffffff;
   cursor: pointer;
 }
+

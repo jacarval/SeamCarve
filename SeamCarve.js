@@ -1,7 +1,7 @@
 'use strict';
 
 self.onmessage = function(e) {
-	self.console.log('alert:', e.data); 
+	self.console.log(e.data); 
 
 	let image = e.data.payload.image;
 	let width = e.data.payload.width;

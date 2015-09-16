@@ -16,7 +16,7 @@ class SeamCarveWorker {
 
 		this.worker.onmessage = function(e) {
 			if (e.data.action === 'update') {
-				callback(e.data.payload);
+				callback(e.data);
 			}
 
 			if (e.data.action === 'error') {
