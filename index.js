@@ -8,12 +8,14 @@ if (!window.Worker) {
 function init() {
 	let ctx = document.getElementById('canvas').getContext('2d'),
 		range = document.getElementById('range'),
-		checkbox = document.getElementById('checkbox'),
+		useWorker = document.getElementById('workrbox'),
+		showHeatMap = document.getElementById('heatbox'),
+		showSeams = document.getElementById('seamsbox'),
 		widthlabel = document.getElementById('width'),
 		img = new Image(),
 		imageData = null;
 
-	window.worker = new SeamCarveWorker();
+	window.seamcarver = new SeamCarveWorker();
 
 	img.src = document.getElementById('source').src;
 	
@@ -45,32 +47,33 @@ function init() {
 		ctx.canvas.width = img.width;
 		ctx.putImageData(imageData, 0, 0); 
 
-		if (checkbox.checked) {       
-			worker.adjust(imageData, newWidth, function(data){
-				window.console.log(data);
+		if (useWorker.checked) {       
+			let options = {showSeams: showSeams.checked, showHeatMap: showHeatMap.checked};
 
+			window.seamcarver.adjust(imageData, newWidth, options, 
+			// draw an updated image
+			function(data){
 				let newImageData = new ImageData(data.payload.image, data.payload.width, data.payload.height);
 
 				ctx.canvas.width = data.payload.width;
 				ctx.putImageData(newImageData, 0, 0);
 			},
+			// draw out a seam
 			function(data){
-				// window.console.log(data.payload);
-			},
-			function(data){
-				let id = ctx.createImageData(1,1);
+				let id = ctx.createImageData(2,2);
 				let d  = id.data;
-				d[0] = 255;
+				d[0] = 0;
 				d[1] = 0;
 				d[2] = 0;
-				d[3] = 255;
+				d[3] = 0;
 				data.payload.seam.forEach(function(col, row) {
 					ctx.putImageData(id, col, row);
 				});
 			});
 		}
 		else {
-			let seamcarver = new SeamCarver(imageData);
+			let options = {showSeams: false, showHeatMap: false};
+			let seamcarver = new SeamCarver(imageData, options);
 			let data = seamcarver.resize(e.target.value);
 			let newImageData = new ImageData(data, e.target.value, img.height);
 
@@ -88,6 +91,11 @@ function init() {
 function changeSrc(e) {
 	document.getElementById('source').src = e.src;
 	init();
+}
+
+function stopWorker() {
+	window.seamcarver.worker.terminate();
+	window.seamcarver = new SeamCarveWorker();
 }
 
 init();

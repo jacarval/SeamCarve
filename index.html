@@ -4,12 +4,13 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<title></title>
-	<link rel="stylesheet" href="index.css">
 	<link rel="stylesheet" href="animate.css">
+	<link rel="stylesheet" href="index.css">
 </head>
 <body>
 
 	<canvas id="c"></canvas>
+
 
 	<div id="loader" class="loader animated fadeIn">SEAMCARVE</div>
 	<div class="imagebox animated fadeIn">
@@ -20,13 +21,20 @@
 
 			<div class="myInput">
 				<form>
-					<label for="worker">Adjust Width</label>
+					<label for="range">Adjust Width</label>
 					<br/>    
 					<input type="range" id="range" value="0">
 					<br/>
-					<label for="nonwrkr">Use WebWorker?</label>   
-					<input type="checkbox" id="checkbox" value="0">
+					<label for="workrbox">WebWorker</label>   
+					<input type="checkbox" id="workrbox">
+					<br/>
+					<label for="heatbox">Heat Map</label>   
+					<input type="checkbox" id="heatbox">
+					<br/>
+					<label for="seamsbox">Seams</label>   
+					<input type="checkbox" id="seamsbox">
 					<p id="width"> </p>
+					<button type="button" id="terminate" onclick="stopWorker()">Stop Worker</button>
 				</form>
 			</div>
 			
@@ -48,7 +56,7 @@
 			<img class="flex-item" src="sheep.jpg" id="sheep" onclick="changeSrc(this)">
 			<img class="flex-item" src="pillars_sm.jpg" id="pillars" onclick="changeSrc(this)">
 		</div>
-	</div>	
+	</div>
 </body>
 <script src="animation.js" type="text/javascript"></script>
 <script src="SeamCarve.js" type="text/javascript"></script>

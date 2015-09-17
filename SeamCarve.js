@@ -5,22 +5,25 @@ self.onmessage = function(e) {
 
 	let image = e.data.payload.image;
 	let width = e.data.payload.width;
+	let options = e.data.payload.options;
 	// let height = e.data.payload.height;
 
 	postMessage({action: 'alert', message: 'resizing'});
 
-	let seamcarver = new SeamCarver(image, true);
+	let seamcarver = new SeamCarver(image, options);
 	let result = seamcarver.resize(width);
 
 	postMessage({action: 'update', payload: {image: result, width: width, height: image.height}});
 };
 
+
 class SeamCarver {
-	constructor(imageData, isWorker) {
+	constructor(imageData, options) {
 		this.data = imageData.data;
 		this.width = imageData.width;
 		this.height = imageData.height;
-		this.isWorker = isWorker;
+		this.showSeams = options.showSeams;
+		this.showHeatMap = options.showHeatMap;
 	}
 
 	getPixelColor(x, y) {
@@ -67,29 +70,47 @@ class SeamCarver {
 	}
 
 	getPixelImportanceArray() {
-		let result = new Array(this.height);
+		let result = [];
 
 		for (let row = 0; row < this.height; row++) {
-			result[row] = new Array(this.width);
+			result[row] = [];
 
 			for (let col = 0; col < this.width; col++) {
 				result[row][col] = (this.getPixelEnergy(col, row));
 			}
 		}
-		if (this.isWorker) postMessage({action: 'pixelImportance', payload: {array: result}});
+		if (this.showHeatMap) this.generateHeatMap(result);
 		return result;
+	}
+
+	generateHeatMap(result) {	
+		let newImage = new Uint8ClampedArray((this.width) * this.height * 4),
+			offset = 0;
+
+		result.forEach(function(row) {
+			row.forEach(function(val) {
+				let ratio = 2 * val / 2000;
+				newImage[offset + 0] = Math.max(0, 255 * (ratio - 1)); // R
+				newImage[offset + 1] = Math.max(0, 255 * (1 - ratio)); // B
+				newImage[offset + 2] = 255; // G
+				newImage[offset + 3] = 255; // Alpha
+				offset = offset + 4;
+			});
+		});
+
+		postMessage({action: 'update', payload: {image: newImage, width: this.width, height: this.height}});
 	}
 
 	findLowestCostSeam() {
 		let vals = this.getPixelImportanceArray(),
-			costs = new Array(this.height),
-			dirs = new Array(this.height);
+			costs = [],
+			dirs = [];
 
 		costs[this.height - 1] = vals[this.height - 1];
 
 		for (let row = this.height - 2; row >= 0; row--) {
-			costs[row] = new Array(this.width);
-			dirs[row] = new Array(this.width);
+			costs[row] = [];
+			dirs[row] = [];
 			for (let col = 0; col <= this.width - 1; col++) {
 				let min = argmin([costs[row + 1][col - 1] || Infinity, costs[row + 1][col] || Infinity, costs[row + 1][col + 1] || Infinity]);
 				costs[row][col] = vals[row][col] + min.value;
@@ -98,7 +119,7 @@ class SeamCarver {
 		}
 		
 		let min_col = argmin(costs[0]).index,
-			seam = new Array(this.height);
+			seam = [];
 
 		seam[0] = min_col;
 
@@ -107,35 +128,8 @@ class SeamCarver {
 			seam[row + 1] = seam[row] + dirs[row][prev];
 		}
 
-		if (this.isWorker) postMessage({action: 'seam', payload: {seam: seam}});
 		return seam;
 	}
-
-	// markSeam() {
-	// 	let seam = this.findLowestCostSeam(), 
-	// 		offset = 0;
-
-	// 	let newImage = new Uint8ClampedArray(this.width * this.height * 4);
-
-	// 	for (let row = 0; row < this.height; row++) {
-	// 		for (let col = 0; col < this.width; col++) {
-	// 			if (col === seam[row]) {
-	// 				offset = offset + 4;
-	// 			}
-	// 			else {
-	// 				let pixel = this.getPixelColor(col, row);
-
-	// 				newImage[offset + 0] = pixel.red;
-	// 				newImage[offset + 1] = pixel.green;
-	// 				newImage[offset + 2] = pixel.blue;
-	// 				newImage[offset + 3] = pixel.alpha;
-
-	// 				offset = offset + 4;
-	// 			}
-	// 		}
-	// 	}
-	// 	return newImage; 
-	// }
 
 	resize(newWidth) {
 		let newImage, deltaWidth = this.width - newWidth;
@@ -165,6 +159,9 @@ class SeamCarver {
 			}
 			this.data = newImage;
 			this.width--;
+
+			if (this.showSeams && !this.showHeatMap) postMessage({action: 'update', payload: {image: newImage, width: this.width, height: this.height}});
+			if (this.showSeams) postMessage({action: 'seam', payload: {seam: seam}});
 		}
 		return newImage;
 	}
