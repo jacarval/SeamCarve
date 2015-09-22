@@ -17,6 +17,25 @@ function init() {
 
 	window.seamcarver = new SeamCarveWorker();
 
+	let paintUpdatedImage = function(data) {
+		let newImageData = new ImageData(data.payload.image, data.payload.width, data.payload.height);
+
+		ctx.canvas.width = data.payload.width;
+		ctx.putImageData(newImageData, 0, 0);
+	};
+
+	let drawSeam = function(data) {
+		let id = ctx.createImageData(2,2);
+		let d  = id.data;
+		d[0] = 0;
+		d[1] = 0;
+		d[2] = 0;
+		d[3] = 0;
+		data.payload.seam.forEach(function(col, row) {
+			ctx.putImageData(id, col, row);
+		});
+	};
+
 	img.src = document.getElementById('source').src;
 	
 	img.onload = function() {
@@ -50,28 +69,8 @@ function init() {
 		if (useWorker.checked) {       
 			let options = {showSeams: showSeams.checked, showHeatMap: showHeatMap.checked};
 
-			window.seamcarver.adjust(imageData, newWidth, options, 
-			// draw an updated image
-			function(data){
-				let newImageData = new ImageData(data.payload.image, data.payload.width, data.payload.height);
-
-				ctx.canvas.width = data.payload.width;
-				ctx.putImageData(newImageData, 0, 0);
-			},
-			// draw out a seam
-			function(data){
-				let id = ctx.createImageData(2,2);
-				let d  = id.data;
-				d[0] = 0;
-				d[1] = 0;
-				d[2] = 0;
-				d[3] = 0;
-				data.payload.seam.forEach(function(col, row) {
-					ctx.putImageData(id, col, row);
-				});
-			});
-		}
-		else {
+			window.seamcarver.adjust(imageData, newWidth, options, paintUpdatedImage, drawSeam);
+		} else {
 			let options = {showSeams: false, showHeatMap: false};
 			let seamcarver = new SeamCarver(imageData, options);
 			let data = seamcarver.resize(e.target.value);

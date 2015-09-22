@@ -10,6 +10,18 @@ body {
   width: 100%;
 }
 
+.info {
+  margin-top: 50px;
+  margin-left: 50px;
+  margin-right: 50px;
+  padding-left: 10px;
+  padding-right: 10px;
+  opacity: 0.9;
+  background-color: #eaecfa;
+  border-radius: 1.3px;
+  border: 1px solid #000000;
+}
+
 .flex-container {
   padding: 0;
   margin: 0;
@@ -35,8 +47,11 @@ body {
   display: flex;
   justify-content: space-around;
   align-items:center;
-/*  background: #ce4233;*/
-  padding: 5px;
+  background: #eaecfa;
+  opacity: 0.9;
+  padding: 10px;
+  border-radius: 1.3px;
+  border: 1px solid #000000;
 }
 
 input {

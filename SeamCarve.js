@@ -14,6 +14,7 @@ self.onmessage = function(e) {
 	let result = seamcarver.resize(width);
 
 	postMessage({action: 'update', payload: {image: result, width: width, height: image.height}});
+	postMessage({action: 'alert', message: 'finished!'});
 };
 
 
@@ -47,7 +48,11 @@ class SeamCarver {
 		return (pixel.red + pixel.green + pixel.blue);
 	}
 
-	getPixelEnergy(x, y) {
+	/*
+		Pixels that are very different from their neighbors should have high importances,
+		and pixels that are similar in color to their neighbors should have low importances.
+	*/
+	getPixelImportance(x, y) {
 		let a, b, c,
 			d, e, f,
 			g, h, i;
@@ -76,7 +81,7 @@ class SeamCarver {
 			result[row] = [];
 
 			for (let col = 0; col < this.width; col++) {
-				result[row][col] = (this.getPixelEnergy(col, row));
+				result[row][col] = (this.getPixelImportance(col, row));
 			}
 		}
 		if (this.showHeatMap) this.generateHeatMap(result);
@@ -100,6 +105,12 @@ class SeamCarver {
 
 		postMessage({action: 'update', payload: {image: newImage, width: this.width, height: this.height}});
 	}
+
+	/*
+		[[3  6  8]		
+		 [5  7  2]
+		 [4  9  3]]
+	*/
 
 	findLowestCostSeam() {
 		let vals = this.getPixelImportanceArray(),
@@ -160,7 +171,7 @@ class SeamCarver {
 			this.data = newImage;
 			this.width--;
 
-			if (this.showSeams && !this.showHeatMap) postMessage({action: 'update', payload: {image: newImage, width: this.width, height: this.height}});
+			if (!this.showHeatMap) postMessage({action: 'update', payload: {image: newImage, width: this.width, height: this.height}});
 			if (this.showSeams) postMessage({action: 'seam', payload: {seam: seam}});
 		}
 		return newImage;
