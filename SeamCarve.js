@@ -169,9 +169,8 @@ class SeamCarver {
 				}
 			}
 			this.data = newImage;
-			this.width--;
 
-			if (!this.showHeatMap) postMessage({action: 'update', payload: {image: newImage, width: this.width, height: this.height}});
+			if (!this.showHeatMap && self.constructor.name != 'Window') postMessage({action: 'update', payload: {image: newImage, width: this.width, height: this.height}});
 			if (this.showSeams) postMessage({action: 'seam', payload: {seam: seam}});
 		}
 		return newImage;
