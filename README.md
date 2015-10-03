@@ -14,9 +14,14 @@ let myWorker = new Worker('worker.js');
 // To send data to the worker use the its postMessage method
 myWorker.postMessage('a message');
 
-// To handle messages from the worker set its onmessage propery
+// To handle messages from the worker set its onmessage handler
 myWorker.onmessage = function(e) {
-  console.log(e.data) // e.data will contain your message
+  console.log(e.data); // e.data will contain your message
+}
+
+// To handle errors from the worker set its onerror handler
+myWorker.onerror = function(error) {
+  console.log(error);
 }
 
 // To terminate a worker mid operation use the terminate method
@@ -29,11 +34,11 @@ postMessage('a message');
 
 // To handle messages from the main thread in the worker set the event handler
 onmessage = function(e) {
-  console.log(e.data)
+  console.log(e.data);
 }
 
 // Workers can import scripts from the same domain into their scope
-importScripts('myScript1.js', 'myScript2.js')
+importScripts('myScript1.js', 'myScript2.js');
 ```
 
 ## How SeamCarve Works
