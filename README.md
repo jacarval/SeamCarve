@@ -42,17 +42,12 @@ onerror = function(error) {
   console.log(error)
 }
 
-// Workers may also close themselves
+// Workers may also close themselves by calling their close method
 close();
 
 // Workers can import scripts from the same domain into their scope
 importScripts('myScript1.js', 'myScript2.js');
 ```
 
-## How SeamCarve Works
-
-
-
-## How to use it
-
+## Here's a demo
 http://jacarval.github.io/SeamCarve/
