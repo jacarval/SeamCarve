@@ -32,10 +32,18 @@ myWorker.terminate();
 // To send data from the worker to the main thread use postMessage
 postMessage('a message');
 
-// To handle messages from the main thread in the worker set the event handler
+// To handle messages from the main thread set the event handler
 onmessage = function(e) {
   console.log(e.data);
 }
+
+// To handle errors from the main thread set the error handler
+onerror = function(error) {
+  console.log(error)
+}
+
+// Workers may also close themselves
+close();
 
 // Workers can import scripts from the same domain into their scope
 importScripts('myScript1.js', 'myScript2.js');
