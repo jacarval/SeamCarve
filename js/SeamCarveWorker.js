@@ -2,7 +2,7 @@
 
 class SeamCarveWorker {
 	constructor() {
-		this.worker = new Worker('SeamCarve.js');
+		this.worker = new Worker('js/SeamCarve.js');
 	}
 
 	adjust(image, newWidth, options, updateCb, seamCb) {
