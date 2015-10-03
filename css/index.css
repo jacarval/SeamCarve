@@ -39,9 +39,8 @@ body {
   padding-top: 80px;
 }
 
-.flex-item > * {
+.flex-item > img {
   background: #ce4233;
-  max-width: 400px
 }
 
 .myInput {
