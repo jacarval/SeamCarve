@@ -1,7 +1,7 @@
 SeamCarve
 =========
 
-JS implementation of the Seam Carve algorithm (http://perso.crans.org/frenoy/matlab2012/seamcarving.pdf). Performs content aware image scaling to shrink images while attempting to maintain the aspect ratio of important features. Uses webworkers to peform image manipulation in a separate thread so that the page header and canvas background can continue to animate without interruption.
+JS implementation of Seam Carve (http://perso.crans.org/frenoy/matlab2012/seamcarving.pdf). Performs content aware image scaling to shrink images while attempting to maintain the aspect ratio of important features. Uses webworkers to peform image manipulation in a separate thread so that the page header and canvas background can continue to animate without interruption.
 
 ## How Web Workers Work
 Web workers let you run javascript in background threads. This lets you perform processor intesive tasks without interfering with the user interface. The input and output of a web worker are transfered by passing messages to event handlers.
