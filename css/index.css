@@ -39,7 +39,7 @@ body {
   padding-top: 80px;
 }
 
-.flex-item > img {
+.flex-item > * {
   background: #ce4233;
 }
 
