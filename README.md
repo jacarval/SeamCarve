@@ -8,13 +8,13 @@ Web workers let you run javascript in background threads. This lets you perform 
 
 ### In the main thread
 ```javascript
-// Create a new instance of worker and pass the path to your script into the constructor.
+// Create a new instance of worker and pass in the path to your script
 let myWorker = new Worker('worker.js');
 
-// To send data to the worker from the main thread use the worker's postMessage method
+// To send data to the worker use the its postMessage method
 myWorker.postMessage('a message');
 
-// To handle messages from the worker in the main thread set the worker's onmessage propery
+// To handle messages from the worker set its onmessage propery
 myWorker.onmessage = function(e) {
   console.log(e.data) // e.data will contain your message
 }
@@ -29,7 +29,7 @@ postMessage('a message');
 
 // To handle messages from the main thread in the worker set the event handler
 onmessage = function(e) {
-  console.log(e.data) // e.data will contain your message
+  console.log(e.data)
 }
 
 // Workers can import scripts from the same domain into their scope
